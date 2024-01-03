@@ -232,6 +232,9 @@ struct uvc_device {
     struct v4l2_device *vdev;
 };
 
+unsigned char g_image[1920*1080*2];
+
+
 /* forward declarations */
 static int uvc_video_stream(struct uvc_device *dev, int enable);
 
@@ -891,7 +894,8 @@ static void uvc_video_fill_buffer(struct uvc_device *dev, struct v4l2_buffer *bu
         /* Fill the buffer with video data. */
         bpl = dev->width * 2;
         for (i = 0; i < dev->height; ++i)
-            memset(dev->mem[buf->index].start + i * bpl, dev->color++, bpl);
+            memcpy(dev->mem[buf->index].start + i * bpl, g_image+i * bpl, bpl);
+            //memset(dev->mem[buf->index].start + i * bpl, dev->color++, bpl);
 
         buf->bytesused = bpl * dev->height;
         break;
@@ -2045,6 +2049,7 @@ static void usage(const char *argv0)
     fprintf(stderr, " -v device	V4L2 Video Capture device\n");
 }
 
+
 int main(int argc, char *argv[])
 {
     struct uvc_device *udev;
@@ -2068,9 +2073,19 @@ int main(int argc, char *argv[])
     int burst = 0;
     enum usb_device_speed speed = USB_SPEED_SUPER; /* High-Speed */
     enum io_method uvc_io_method = IO_METHOD_USERPTR;
+    FILE * file;
+    size_t bytesRead;
 
-    while ((opt = getopt(argc, argv, "bdf:hi:m:n:o:r:s:t:u:v:")) != -1) {
+    while ((opt = getopt(argc, argv, "bdf:hi:m:n:o:r:s:t:u:v:y:")) != -1) {
         switch (opt) {
+        case 'y':
+            file = fopen(optarg, "rb");
+            bytesRead = 0;
+            if (file != NULL) {
+                bytesRead = fread(g_image, 1, sizeof(g_image), file);
+                fclose(file);
+            }
+            break;
         case 'b':
             bulk_mode = 1;
             break;
@@ -2351,3 +2366,4 @@ int main(int argc, char *argv[])
     uvc_close(udev);
     return 0;
 }
+
