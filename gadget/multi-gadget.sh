@@ -1,8 +1,5 @@
 #!/bin/sh
 
-CONFIGURE_USB_SERIAL=true
-CONFIGURE_USB_WEBCAM=true
-
 cd /sys/kernel/config/usb_gadget/
 mkdir xue
 cd xue
@@ -33,6 +30,16 @@ config_usb_serial () {
   ln -s functions/acm.usb0 configs/c.1/acm.usb0
 }
 
+
+
+config_usb_ethenet () {
+  mkdir functions/rndis.usb0
+  HOST="00:dc:c8:f7:75:14" # "HostPC"
+  SELF="00:dd:dc:eb:6d:a1" # "BadUSB"
+  echo $HOST > functions/rndis.usb0/host_addr
+  echo $SELF > functions/rndis.usb0/dev_addr
+  ln -s functions/rndis.usb0 configs/c.1
+}
 
 create_uvc_function () {
 	# Example usage:
@@ -95,16 +102,11 @@ ln -s functions/uvc.usb0 configs/c.1/uvc.usb0
 # End functions
 }
 
+config_usb_ethenet
 
-if [ "$CONFIGURE_USB_WEBCAM" = true ] ; then
-  echo "Configuring USB gadget webcam interface"
-  config_usb_webcam
-fi
+config_usb_webcam
 
-if [ "$CONFIGURE_USB_SERIAL" = true ] ; then
-  echo "Configuring USB gadget serial interface"
-  config_usb_serial
-fi
+config_usb_serial
 
 ls /sys/class/udc > UDC
 udevadm settle -t 5 || :
