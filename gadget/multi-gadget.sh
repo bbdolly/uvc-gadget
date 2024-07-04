@@ -61,6 +61,7 @@ create_uvc_function () {
 	# dwFrameInterfal is in 100-ns units (fps = 1/(dwFrameInterval * 10000000))
 	# 333333 -> 30 fps
 	# 666666 -> 15 fps
+	# 2000000 -> 5 fps
 	# 5000000 -> 2 fps
 	cat <<EOF > $wdir/dwFrameInterval
 333333
